@@ -315,7 +315,7 @@ function HomeScreen({
 
       <SectionHeader
         title="Deals"
-        subtitle="3 offres actives qui changent avec le backend"
+        subtitle="Les meilleures offres du moment"
       />
       {deals.map((deal) => (
         <DealCard key={deal.id} deal={deal} compact />
@@ -375,22 +375,11 @@ function FilterPills<TValue extends string>({
 }
 
 function DealsScreen({ deals }: { deals: Deal[] }) {
-  const [query, setQuery] = useState('');
   const [visaFilter, setVisaFilter] = useState<VisaFilter>('all');
   const [sort, setSort] = useState<DealSort>('score');
 
   const filteredDeals = useMemo(() => {
     let result = deals;
-    const normalizedQuery = normalize(query.trim());
-
-    if (normalizedQuery) {
-      result = result.filter(
-        (deal) =>
-          normalize(deal.fromCity).includes(normalizedQuery) ||
-          normalize(deal.toCity).includes(normalizedQuery) ||
-          normalize(deal.countryCode).includes(normalizedQuery),
-      );
-    }
 
     if (visaFilter !== 'all') {
       result = result.filter((deal) => {
@@ -410,20 +399,13 @@ function DealsScreen({ deals }: { deals: Deal[] }) {
       }
       return b.score - a.score;
     });
-  }, [deals, query, visaFilter, sort]);
+  }, [deals, visaFilter, sort]);
 
   return (
     <View>
       <SectionHeader
         title="Deals"
         subtitle="Les vols à surveiller avant de réserver"
-      />
-      <TextInput
-        value={query}
-        onChangeText={setQuery}
-        placeholder="Chercher une ville, un pays..."
-        placeholderTextColor={colors.muted}
-        style={styles.input}
       />
       <FilterPills
         options={visaFilterOptions}
