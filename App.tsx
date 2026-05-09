@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Image,
   Linking,
+  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -14,7 +15,6 @@ import {
 } from 'react-native';
 
 import {
-  apiBaseUrl,
   fetchDeals,
   fetchDestinations,
   simulateTrip,
@@ -794,7 +794,13 @@ function DealCard({ deal, compact }: { deal: Deal; compact?: boolean }) {
 
       <Pressable
         style={styles.cardButton}
-        onPress={() => Linking.openURL(deal.bookingUrl)}
+        onPress={() => {
+          const url = deal.bookingUrl;
+          if (!url.startsWith('https://') && !url.startsWith('http://')) return;
+          Linking.canOpenURL(url).then((supported) => {
+            if (supported) Linking.openURL(url);
+          }).catch(() => {});
+        }}
       >
         <Text style={styles.cardButtonText}>Voir l'offre</Text>
       </Pressable>
@@ -901,16 +907,16 @@ function SimulationResult({ result }: { result: TripSimulationResult }) {
       <Text style={styles.resultTitle}>{result.title}</Text>
       <Text style={styles.resultText}>{result.summary}</Text>
       <View style={styles.statsRow}>
-        <StatCard label="Total" value={formatMad(result.budgetMad)} />
+        <StatCard label="Total" value={result.budgetMad ? formatMad(result.budgetMad) : '—'} />
         <StatCard
           label="Par jour"
-          value={formatMad(result.estimatedDailyBudgetMad)}
+          value={result.estimatedDailyBudgetMad ? formatMad(result.estimatedDailyBudgetMad) : '—'}
         />
       </View>
       {result.budgetWarning && (
         <Text style={styles.warningText}>{result.budgetWarning}</Text>
       )}
-      {result.dayPlans.map((day) => (
+      {(result.dayPlans ?? []).map((day) => (
         <View key={day.day} style={styles.dayCard}>
           <Text style={styles.dayTitle}>
             Jour {day.day} · {day.title}
@@ -949,7 +955,6 @@ function ErrorState({
     <View style={[styles.stateBox, compact && styles.compactStateBox]}>
       <Text style={styles.errorTitle}>La demande n'a pas abouti</Text>
       <Text style={styles.stateText}>{message}</Text>
-      {!compact && <Text style={styles.stateHint}>API: {apiBaseUrl}</Text>}
     </View>
   );
 }
@@ -1482,7 +1487,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: 22,
     borderWidth: 1,
-    bottom: 18,
+    bottom: Platform.OS === 'ios' ? 36 : 18,
     flexDirection: 'row',
     left: 18,
     padding: 6,
