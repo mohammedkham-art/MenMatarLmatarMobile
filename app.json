@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "Men Matar L Matar",
+    "slug": "men-matar-l-matar",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "menmatarlmatar",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ma.menmatarlmatar.app"
+    },
+    "android": {
+      "package": "ma.menmatarlmatar.app"
+    },
+    "extra": {
+      "apiBaseUrl": "https://menmatarlmatar.ma"
+    }
+  }
+}
