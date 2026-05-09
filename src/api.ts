@@ -10,6 +10,14 @@ const defaultApiBaseUrl = 'https://menmatarlmatar.ma';
 export const apiBaseUrl =
   process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ?? defaultApiBaseUrl;
 
+// AbortSignal.timeout() n'est pas supporté par Hermes (moteur JS de React Native).
+// On utilise AbortController + setTimeout comme alternative compatible.
+function timeoutSignal(ms: number): AbortSignal {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
 
@@ -40,7 +48,7 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
 
 export async function fetchDeals() {
   const payload = await requestJson<{ deals: Deal[] }>('/api/mobile/deals', {
-    signal: AbortSignal.timeout(15_000),
+    signal: timeoutSignal(15_000),
   });
 
   return payload.deals;
@@ -50,7 +58,7 @@ export async function fetchDestinations(mode: 'public' | 'simulator') {
   const suffix = mode === 'simulator' ? '?mode=simulator' : '';
   const payload = await requestJson<{ destinations: Destination[] }>(
     `/api/mobile/destinations${suffix}`,
-    { signal: AbortSignal.timeout(15_000) },
+    { signal: timeoutSignal(15_000) },
   );
 
   return payload.destinations;
@@ -66,7 +74,7 @@ export async function simulateTrip(params: TripSimulationRequest) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(params),
-    signal: AbortSignal.timeout(55_000),
+    signal: timeoutSignal(55_000),
   });
 
   if (!payload.plan) {
