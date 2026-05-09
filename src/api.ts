@@ -39,7 +39,9 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function fetchDeals() {
-  const payload = await requestJson<{ deals: Deal[] }>('/api/mobile/deals');
+  const payload = await requestJson<{ deals: Deal[] }>('/api/mobile/deals', {
+    signal: AbortSignal.timeout(15_000),
+  });
 
   return payload.deals;
 }
@@ -48,6 +50,7 @@ export async function fetchDestinations(mode: 'public' | 'simulator') {
   const suffix = mode === 'simulator' ? '?mode=simulator' : '';
   const payload = await requestJson<{ destinations: Destination[] }>(
     `/api/mobile/destinations${suffix}`,
+    { signal: AbortSignal.timeout(15_000) },
   );
 
   return payload.destinations;

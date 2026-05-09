@@ -126,6 +126,7 @@ export default function App() {
   >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -169,7 +170,7 @@ export default function App() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [retryKey]);
 
   const featuredDeals = useMemo(() => deals.slice(0, 3), [deals]);
 
@@ -182,7 +183,10 @@ export default function App() {
         {isLoading ? (
           <LoadingState />
         ) : loadError ? (
-          <ErrorState message={loadError} />
+          <ErrorState
+            message={loadError}
+            onRetry={() => setRetryKey((k) => k + 1)}
+          />
         ) : (
           <ScrollView
             style={styles.content}
@@ -317,9 +321,13 @@ function HomeScreen({
         title="Deals"
         subtitle="Les meilleures offres du moment"
       />
-      {deals.map((deal) => (
-        <DealCard key={deal.id} deal={deal} compact />
-      ))}
+      {deals.length === 0 ? (
+        <EmptyState message="Aucun deal actif pour le moment." />
+      ) : (
+        deals.map((deal) => (
+          <DealCard key={deal.id} deal={deal} compact />
+        ))
+      )}
     </View>
   );
 }
@@ -940,14 +948,21 @@ function LoadingState() {
 function ErrorState({
   message,
   compact,
+  onRetry,
 }: {
   message: string;
   compact?: boolean;
+  onRetry?: () => void;
 }) {
   return (
     <View style={[styles.stateBox, compact && styles.compactStateBox]}>
       <Text style={styles.errorTitle}>La demande n'a pas abouti</Text>
       <Text style={styles.stateText}>{message}</Text>
+      {onRetry && (
+        <Pressable onPress={onRetry} style={styles.retryButton}>
+          <Text style={styles.retryButtonText}>Réessayer</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -1503,6 +1518,19 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: '#ffffff',
+  },
+  retryButton: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 14,
+    marginTop: 16,
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '900',
   },
   privacyLink: {
     alignItems: 'center',
