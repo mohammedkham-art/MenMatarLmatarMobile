@@ -710,6 +710,17 @@ function SimulatorScreen({
       {isSubmitting && <SimulatorLoadingState />}
       {!isSubmitting && error && <SimulatorErrorState message={error} />}
       {!isSubmitting && result && <SimulationResult result={result} />}
+
+      <Pressable
+        onPress={() =>
+          Linking.openURL('https://menmatarlmatar.ma/privacy').catch(() => {})
+        }
+        style={styles.privacyLink}
+      >
+        <Text style={styles.privacyLinkText}>
+          Politique de confidentialité
+        </Text>
+      </Pressable>
     </View>
   );
 }
@@ -1510,5 +1521,15 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: '#ffffff',
+  },
+  privacyLink: {
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 8,
+  },
+  privacyLinkText: {
+    color: colors.muted,
+    fontSize: 12,
+    textDecorationLine: 'underline',
   },
 });
