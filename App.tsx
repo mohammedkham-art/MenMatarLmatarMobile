@@ -1503,17 +1503,21 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   optionRow: {
+    alignItems: 'center',
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
     marginHorizontal: -4,
   },
   option: {
+    alignItems: 'center',
     backgroundColor: colors.card,
     borderColor: colors.border,
     borderRadius: 12,
     borderWidth: 1,
     margin: 4,
-    paddingHorizontal: 14,
+    minWidth: 92,
+    paddingHorizontal: 16,
     paddingVertical: 11,
   },
   optionActive: {
