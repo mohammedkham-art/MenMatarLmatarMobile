@@ -6,6 +6,7 @@ import {
   Linking,
   Platform,
   Pressable,
+  RefreshControl,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -34,9 +35,9 @@ type Tab = 'home' | 'deals' | 'destinations' | 'simulator';
 
 const tabs: Array<{ label: string; value: Tab }> = [
   { label: 'Accueil', value: 'home' },
-  { label: 'Deals', value: 'deals' },
-  { label: 'Visas', value: 'destinations' },
-  { label: 'IA', value: 'simulator' },
+  { label: 'Offres', value: 'deals' },
+  { label: 'Destinations', value: 'destinations' },
+  { label: 'Simulateur IA', value: 'simulator' },
 ];
 
 const travelerOptions: Array<{ label: string; value: TravelerType }> = [
@@ -62,6 +63,15 @@ const visaLabels: Record<DealVisaType | DestinationVisaType, string> = {
 };
 
 const recentPriceMaxAgeHours = 144;
+
+const simulatorSnapshots = [
+  { days: '3J', budget: '2 000', city: 'Istanbul' },
+  { days: '5J', budget: '4 500', city: 'Tunis' },
+  { days: '7J', budget: '6 500', city: 'Bangkok' },
+  { days: '4J', budget: '3 800', city: 'Le Caire' },
+  { days: '10J', budget: '9 900', city: 'Bali' },
+  { days: '6J', budget: '5 700', city: 'Doha' },
+];
 
 function formatMad(value: number) {
   return `${value.toLocaleString('fr-MA')} MAD`;
@@ -117,6 +127,18 @@ function getVisaTone(visaType: DealVisaType | DestinationVisaType | null) {
   return { backgroundColor: colors.greenSoft, color: colors.green };
 }
 
+function getRefreshItem<T>(items: T[]) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+function getTransitAirport(tags: string[]) {
+  const transitTag = tags.find((tag) =>
+    tag.toLowerCase().startsWith('transit:'),
+  );
+
+  return transitTag?.split(':')[1]?.trim().toUpperCase() ?? null;
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -127,6 +149,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -161,6 +184,7 @@ export default function App() {
       } finally {
         if (isMounted) {
           setIsLoading(false);
+          setIsRefreshing(false);
         }
       }
     }
@@ -173,6 +197,10 @@ export default function App() {
   }, [retryKey]);
 
   const featuredDeals = useMemo(() => deals.slice(0, 3), [deals]);
+  const refreshData = () => {
+    setIsRefreshing(true);
+    setRetryKey((key) => key + 1);
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -191,6 +219,14 @@ export default function App() {
           <ScrollView
             style={styles.content}
             contentContainerStyle={styles.contentInner}
+            refreshControl={
+              <RefreshControl
+                colors={[colors.primary]}
+                refreshing={isRefreshing}
+                tintColor={colors.primary}
+                onRefresh={refreshData}
+              />
+            }
             showsVerticalScrollIndicator={false}
           >
             {activeTab === 'home' && (
@@ -276,32 +312,44 @@ function HomeScreen({
   destinations: Destination[];
   onNavigate: (tab: Tab) => void;
 }) {
-  const visaFreeCount = destinations.filter(
-    (destination) => destination.visaType === 'visa_free',
-  ).length;
-  const evisaCount = destinations.filter(
-    (destination) => destination.visaType === 'evisa',
-  ).length;
-  const arrivalCount = destinations.filter(
-    (destination) => destination.visaType === 'on_arrival',
-  ).length;
+  const currentSimulation = useMemo(
+    () => getRefreshItem(simulatorSnapshots),
+    [deals, destinations],
+  );
 
   return (
     <View>
       <View style={styles.hero}>
-        <Text style={styles.eyebrow}>Bons plans voyage depuis le Maroc</Text>
+        <Text style={styles.eyebrow}>Simulateur IA</Text>
         <Text style={styles.heroTitle}>
-          Trouve où partir, quoi réserver et quoi vérifier avant le départ.
+          Imagine ton prochain séjour avant de réserver.
         </Text>
         <Text style={styles.heroText}>
-          Deals actifs, règles visa et simulation IA dans une app pensée pour
-          les voyageurs marocains.
+          Choisis une destination, une date et un budget. L'app te prépare une
+          première idée de programme en quelques secondes.
         </Text>
+        <View style={styles.heroFeatureRow}>
+          <View style={styles.heroFeature}>
+            <Text style={styles.heroFeatureValue}>{currentSimulation.days}</Text>
+            <Text style={styles.heroFeatureLabel}>durée</Text>
+          </View>
+          <View style={styles.heroFeature}>
+            <Text style={styles.heroFeatureValue}>
+              {currentSimulation.budget}
+            </Text>
+            <Text style={styles.heroFeatureLabel}>DHS</Text>
+          </View>
+          <View style={styles.heroFeature}>
+            <Text style={styles.heroFeatureValue}>
+              {currentSimulation.city}
+            </Text>
+          </View>
+        </View>
       </View>
 
       <View style={styles.quickActions}>
         <Pressable style={styles.primaryButton} onPress={() => onNavigate('deals')}>
-          <Text style={styles.primaryButtonText}>Voir les deals</Text>
+          <Text style={styles.primaryButtonText}>Voir les offres</Text>
         </Pressable>
         <Pressable
           style={styles.secondaryButton}
@@ -312,13 +360,13 @@ function HomeScreen({
       </View>
 
       <View style={styles.statsRow}>
-        <StatCard label="Sans visa" value={visaFreeCount} />
-        <StatCard label="eVisa" value={evisaCount} />
-        <StatCard label="Arrivée" value={arrivalCount} />
+        <StatCard label="Sans visa" value="+40" />
+        <StatCard label="eVisa" value="+40" />
+        <StatCard label="À l'arrivée" value="14" />
       </View>
 
       <SectionHeader
-        title="Deals"
+        title="Offres du moment"
         subtitle="Les meilleures offres du moment"
       />
       {deals.length === 0 ? (
@@ -340,6 +388,7 @@ const visaFilterOptions: Array<{ label: string; value: VisaFilter }> = [
   { label: 'Sans visa', value: 'visa_free' },
   { label: 'eVisa', value: 'evisa' },
   { label: 'Arrivée', value: 'on_arrival' },
+  { label: 'Visa requis', value: 'visa_required' },
 ];
 
 const dealSortOptions: Array<{ label: string; value: DealSort }> = [
@@ -517,7 +566,17 @@ function SimulatorScreen({
   function toApiDate(display: string) {
     const match = display.match(/^(\d{2})-(\d{2})-(\d{4})$/);
     if (!match) return '';
-    return `${match[3]}-${match[2]}-${match[1]}`;
+
+    const [, day, month, year] = match;
+    const parsedDate = new Date(`${year}-${month}-${day}T00:00:00`);
+    const isValidDate =
+      parsedDate.getFullYear() === Number(year) &&
+      parsedDate.getMonth() + 1 === Number(month) &&
+      parsedDate.getDate() === Number(day);
+
+    if (!isValidDate) return '';
+
+    return `${year}-${month}-${day}`;
   }
 
   // Formate la saisie automatiquement en DD-MM-YYYY
@@ -762,6 +821,7 @@ function VisaBadge({
 function DealCard({ deal, compact }: { deal: Deal; compact?: boolean }) {
   const departureDate = formatDate(deal.departureDate);
   const returnDate = formatDate(deal.returnDate);
+  const transitAirport = getTransitAirport(deal.tags);
 
   return (
     <View style={styles.card}>
@@ -778,6 +838,13 @@ function DealCard({ deal, compact }: { deal: Deal; compact?: boolean }) {
           <Text style={styles.cardSubtitle}>
             {deal.fromAirport} → {deal.toAirport}
           </Text>
+          {transitAirport && (
+            <View style={styles.transitBadge}>
+              <Text style={styles.transitBadgeText}>
+                Transit via {transitAirport}
+              </Text>
+            </View>
+          )}
         </View>
         <View style={styles.priceBox}>
           <Text style={styles.priceLabel}>À partir de</Text>
@@ -1001,9 +1068,9 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
+    borderColor: '#ffffff',
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1065,6 +1132,32 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 23,
     marginTop: 12,
+  },
+  heroFeatureRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 18,
+  },
+  heroFeature: {
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderColor: 'rgba(255,255,255,0.16)',
+    borderRadius: 14,
+    borderWidth: 1,
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+  },
+  heroFeatureValue: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: '900',
+  },
+  heroFeatureLabel: {
+    color: 'rgba(255,255,255,0.68)',
+    fontSize: 11,
+    fontWeight: '800',
+    marginTop: 2,
+    textTransform: 'uppercase',
   },
   quickActions: {
     flexDirection: 'row',
@@ -1191,6 +1284,19 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   badgeText: {
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  transitBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.orangeSoft,
+    borderRadius: 999,
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  transitBadgeText: {
+    color: colors.orange,
     fontSize: 11,
     fontWeight: '900',
   },
