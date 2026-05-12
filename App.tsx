@@ -298,7 +298,12 @@ function TabBar({
             onPress={() => onChange(tab.value)}
             style={[styles.tabButton, isActive && styles.tabButtonActive]}
           >
-            <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
+            <Text
+              style={[styles.tabText, isActive && styles.tabTextActive]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.72}
+            >
               {tab.label}
             </Text>
           </Pressable>
@@ -344,11 +349,16 @@ function HomeScreen({
             </Text>
             <Text style={styles.heroFeatureLabel}>DHS</Text>
           </View>
-          <View style={styles.heroFeature}>
-            <Text style={styles.heroFeatureValue}>
-              {currentSimulation.city}
-            </Text>
-          </View>
+        </View>
+        <View style={styles.heroCityFeature}>
+          <Text
+            style={styles.heroCityValue}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.78}
+          >
+            {currentSimulation.city}
+          </Text>
         </View>
       </View>
 
@@ -1185,13 +1195,32 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 20,
     fontWeight: '900',
+    textAlign: 'center',
   },
   heroFeatureLabel: {
     color: 'rgba(255,255,255,0.68)',
     fontSize: 11,
     fontWeight: '800',
     marginTop: 2,
+    textAlign: 'center',
     textTransform: 'uppercase',
+  },
+  heroCityFeature: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderColor: 'rgba(255,255,255,0.16)',
+    borderRadius: 14,
+    borderWidth: 1,
+    marginTop: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  heroCityValue: {
+    color: '#ffffff',
+    fontSize: 22,
+    fontWeight: '900',
+    textAlign: 'center',
+    width: '100%',
   },
   quickActions: {
     flexDirection: 'row',
@@ -1646,6 +1675,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 16,
     flex: 1,
+    minWidth: 0,
+    paddingHorizontal: 3,
     paddingVertical: 10,
   },
   tabButtonActive: {
@@ -1653,8 +1684,10 @@ const styles = StyleSheet.create({
   },
   tabText: {
     color: colors.muted,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '900',
+    textAlign: 'center',
+    width: '100%',
   },
   tabTextActive: {
     color: '#ffffff',
