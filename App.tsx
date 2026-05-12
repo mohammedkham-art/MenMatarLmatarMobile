@@ -144,6 +144,15 @@ function getTransitAirport(tags: string[]) {
   return transitTag?.split(':')[1]?.trim().toUpperCase() ?? null;
 }
 
+function getVisaStatCount(countries: Country[], visaTypes: CountryVisaType[]) {
+  return countries.filter((country) => visaTypes.includes(country.visaType))
+    .length;
+}
+
+function formatThresholdCount(count: number, threshold = 40) {
+  return count > threshold ? `+${threshold}` : String(count);
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -326,6 +335,12 @@ function HomeScreen({
     () => getRefreshItem(simulatorSnapshots),
     [deals, countries],
   );
+  const visaFreeCount = getVisaStatCount(countries, ['visa_free']);
+  const eVisaCount = getVisaStatCount(countries, ['evisa', 'e_visa']);
+  const visaOnArrivalCount = getVisaStatCount(countries, [
+    'on_arrival',
+    'visa_on_arrival',
+  ]);
 
   return (
     <View>
@@ -375,9 +390,9 @@ function HomeScreen({
       </View>
 
       <View style={styles.statsRow}>
-        <StatCard label="Sans visa" value="+40" />
-        <StatCard label="eVisa" value="+40" />
-        <StatCard label="À l'arrivée" value="14" />
+        <StatCard label="Sans visa" value={formatThresholdCount(visaFreeCount)} />
+        <StatCard label="eVisa" value={formatThresholdCount(eVisaCount)} />
+        <StatCard label="À l'arrivée" value={visaOnArrivalCount} />
       </View>
 
       <SectionHeader
@@ -684,86 +699,96 @@ function SimulatorScreen({
         subtitle="Une première idée de séjour, budget et conseils passeport"
       />
 
-      <Text style={styles.label}>Ville de destination</Text>
-      <TextInput
-        value={query}
-        onChangeText={(value) => {
-          setQuery(value);
-          setSelectedDestination(null);
-        }}
-        placeholder="Istanbul, Paris, Bangkok..."
-        placeholderTextColor={colors.muted}
-        style={styles.input}
-      />
-      {selectedDestination && (
-        <DestinationCard destination={selectedDestination} compact />
-      )}
-      {suggestions.map((destination) => (
-        <Pressable
-          key={destination.id}
-          onPress={() => {
-            setSelectedDestination(destination);
-            setQuery(`${destination.city}, ${destination.country}`);
-          }}
-        >
-          <DestinationCard destination={destination} compact />
-        </Pressable>
-      ))}
+      <View style={styles.simulatorGrid}>
+        <View style={styles.simulatorColumn}>
+          <Text style={styles.label}>Ville de destination</Text>
+          <TextInput
+            value={query}
+            onChangeText={(value) => {
+              setQuery(value);
+              setSelectedDestination(null);
+            }}
+            placeholder="Istanbul, Paris..."
+            placeholderTextColor={colors.muted}
+            style={styles.input}
+          />
+          {selectedDestination && (
+            <DestinationCard destination={selectedDestination} compact />
+          )}
+          {suggestions.map((destination) => (
+            <Pressable
+              key={destination.id}
+              onPress={() => {
+                setSelectedDestination(destination);
+                setQuery(`${destination.city}, ${destination.country}`);
+              }}
+            >
+              <DestinationCard destination={destination} compact />
+            </Pressable>
+          ))}
 
-      <Text style={styles.label}>Date d'arrivée</Text>
-      <TextInput
-        value={arrivalDateDisplay}
-        onChangeText={handleArrivalDateChange}
-        placeholder="JJ-MM-AAAA"
-        placeholderTextColor={colors.muted}
-        keyboardType="numeric"
-        style={styles.input}
-      />
+          <Text style={styles.label}>Date d'arrivée</Text>
+          <TextInput
+            value={arrivalDateDisplay}
+            onChangeText={handleArrivalDateChange}
+            placeholder="JJ-MM-AAAA"
+            placeholderTextColor={colors.muted}
+            keyboardType="numeric"
+            style={styles.input}
+          />
 
-      <Text style={styles.label}>Nombre de jours</Text>
-      <View style={styles.stepper}>
-        <Pressable
-          style={styles.stepperButton}
-          onPress={() => setDurationDays(Math.max(1, durationDays - 1))}
-        >
-          <Text style={styles.stepperButtonText}>-</Text>
-        </Pressable>
-        <Text style={styles.stepperValue}>{durationDays}</Text>
-        <Pressable
-          style={styles.stepperButton}
-          onPress={() => setDurationDays(Math.min(30, durationDays + 1))}
-        >
-          <Text style={styles.stepperButtonText}>+</Text>
-        </Pressable>
+          <Text style={styles.label}>Nombre de jours</Text>
+          <View style={styles.stepper}>
+            <Pressable
+              style={styles.stepperButton}
+              onPress={() => setDurationDays(Math.max(1, durationDays - 1))}
+            >
+              <Text style={styles.stepperButtonText}>-</Text>
+            </Pressable>
+            <Text style={styles.stepperValue}>{durationDays}</Text>
+            <Pressable
+              style={styles.stepperButton}
+              onPress={() => setDurationDays(Math.min(30, durationDays + 1))}
+            >
+              <Text style={styles.stepperButtonText}>+</Text>
+            </Pressable>
+          </View>
+        </View>
+
+        <View style={styles.simulatorColumn}>
+          <Text style={styles.label}>Budget total en MAD (facultatif)</Text>
+          <TextInput
+            value={budgetMad}
+            onChangeText={setBudgetMad}
+            keyboardType="numeric"
+            placeholder="Ex: 3000"
+            placeholderTextColor={colors.muted}
+            style={styles.input}
+          />
+          {budgetError && <Text style={styles.warningText}>{budgetError}</Text>}
+
+          <OptionGroup
+            label="Type de voyageur"
+            options={travelerOptions}
+            value={travelerType}
+            onChange={setTravelerType}
+          />
+          <OptionGroup
+            label="Style de voyage"
+            options={styleOptions}
+            value={travelStyle}
+            onChange={setTravelStyle}
+          />
+        </View>
       </View>
-
-      <Text style={styles.label}>Budget total en MAD (facultatif)</Text>
-      <TextInput
-        value={budgetMad}
-        onChangeText={setBudgetMad}
-        keyboardType="numeric"
-        placeholder="Ex: 3000"
-        placeholderTextColor={colors.muted}
-        style={styles.input}
-      />
-      {budgetError && <Text style={styles.warningText}>{budgetError}</Text>}
-
-      <OptionGroup
-        label="Type de voyageur"
-        options={travelerOptions}
-        value={travelerType}
-        onChange={setTravelerType}
-      />
-      <OptionGroup
-        label="Style de voyage"
-        options={styleOptions}
-        value={travelStyle}
-        onChange={setTravelStyle}
-      />
 
       <Pressable
         disabled={!canSubmit}
-        style={[styles.primaryButton, !canSubmit && styles.disabledButton]}
+        style={[
+          styles.primaryButton,
+          styles.simulatorSubmitButton,
+          !canSubmit && styles.disabledButton,
+        ]}
         onPress={handleSubmit}
       >
         <Text style={styles.primaryButtonText}>
@@ -1262,6 +1287,10 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: '#aebbb4',
   },
+  simulatorSubmitButton: {
+    flex: 0,
+    width: '100%',
+  },
   statsRow: {
     flexDirection: 'row',
     marginHorizontal: -4,
@@ -1424,6 +1453,15 @@ const styles = StyleSheet.create({
     minHeight: 50,
     marginBottom: 12,
     paddingHorizontal: 14,
+  },
+  simulatorGrid: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: 12,
+  },
+  simulatorColumn: {
+    flex: 1,
+    minWidth: 0,
   },
   label: {
     color: colors.muted,
