@@ -753,9 +753,7 @@ function SimulatorScreen({
               <Text style={styles.stepperButtonText}>+</Text>
             </Pressable>
           </View>
-        </View>
 
-        <View style={styles.simulatorColumn}>
           <Text style={styles.label}>Budget total en MAD (facultatif)</Text>
           <TextInput
             value={budgetMad}
@@ -766,7 +764,9 @@ function SimulatorScreen({
             style={styles.input}
           />
           {budgetError && <Text style={styles.warningText}>{budgetError}</Text>}
+        </View>
 
+        <View style={styles.simulatorColumn}>
           <OptionGroup
             label="Type de voyageur"
             options={travelerOptions}
@@ -1475,26 +1475,29 @@ const styles = StyleSheet.create({
   stepper: {
     alignItems: 'center',
     flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 12,
   },
   stepperButton: {
     alignItems: 'center',
     backgroundColor: colors.primary,
-    borderRadius: 12,
-    height: 46,
+    borderRadius: 10,
+    height: 38,
     justifyContent: 'center',
-    width: 54,
+    width: 42,
   },
   stepperButtonText: {
     color: '#ffffff',
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '900',
+    lineHeight: 20,
   },
   stepperValue: {
     color: colors.text,
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '900',
-    paddingHorizontal: 22,
+    paddingHorizontal: 10,
+    textAlign: 'center',
   },
   optionGroup: {
     marginTop: 8,
