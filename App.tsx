@@ -1001,6 +1001,9 @@ function OptionGroup<TValue extends string>({
             >
               <Text
                 style={[styles.optionText, isActive && styles.optionTextActive]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.82}
               >
                 {option.label}
               </Text>
@@ -1528,7 +1531,7 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
   },
   optionTwoColumn: {
-    flexBasis: '45%',
+    flexBasis: '47%',
     flexGrow: 1,
     minWidth: 0,
   },
@@ -1541,6 +1544,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     textAlign: 'center',
+    width: '100%',
   },
   optionTextActive: {
     color: '#ffffff',
