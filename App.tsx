@@ -155,6 +155,8 @@ function formatThresholdCount(count: number, threshold = 40) {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('home');
+  const [destinationsVisaFilter, setDestinationsVisaFilter] =
+    useState<VisaFilter>('all');
   const [deals, setDeals] = useState<Deal[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [simulatorDestinations, setSimulatorDestinations] = useState<
@@ -248,11 +250,19 @@ export default function App() {
                 deals={featuredDeals}
                 countries={countries}
                 onNavigate={setActiveTab}
+                onSelectVisaFilter={(visaFilter) => {
+                  setDestinationsVisaFilter(visaFilter);
+                  setActiveTab('destinations');
+                }}
               />
             )}
             {activeTab === 'deals' && <DealsScreen deals={deals} />}
             {activeTab === 'destinations' && (
-              <DestinationsScreen countries={countries} />
+              <DestinationsScreen
+                countries={countries}
+                visaFilter={destinationsVisaFilter}
+                onVisaFilterChange={setDestinationsVisaFilter}
+              />
             )}
             {activeTab === 'simulator' && (
               <SimulatorScreen destinations={simulatorDestinations} />
@@ -326,10 +336,12 @@ function HomeScreen({
   deals,
   countries,
   onNavigate,
+  onSelectVisaFilter,
 }: {
   deals: Deal[];
   countries: Country[];
   onNavigate: (tab: Tab) => void;
+  onSelectVisaFilter: (visaFilter: VisaFilter) => void;
 }) {
   const currentSimulation = useMemo(
     () => getRefreshItem(simulatorSnapshots),
@@ -390,9 +402,21 @@ function HomeScreen({
       </View>
 
       <View style={styles.statsRow}>
-        <StatCard label="Sans visa" value={formatThresholdCount(visaFreeCount)} />
-        <StatCard label="eVisa" value={formatThresholdCount(eVisaCount)} />
-        <StatCard label="À l'arrivée" value={visaOnArrivalCount} />
+        <StatCard
+          label="Sans visa"
+          value={formatThresholdCount(visaFreeCount)}
+          onPress={() => onSelectVisaFilter('visa_free')}
+        />
+        <StatCard
+          label="eVisa"
+          value={formatThresholdCount(eVisaCount)}
+          onPress={() => onSelectVisaFilter('evisa')}
+        />
+        <StatCard
+          label="À l'arrivée"
+          value={visaOnArrivalCount}
+          onPress={() => onSelectVisaFilter('on_arrival')}
+        />
       </View>
 
       <SectionHeader
@@ -521,11 +545,14 @@ function DealsScreen({ deals }: { deals: Deal[] }) {
 
 function DestinationsScreen({
   countries,
+  visaFilter,
+  onVisaFilterChange,
 }: {
   countries: Country[];
+  visaFilter: VisaFilter;
+  onVisaFilterChange: (visaFilter: VisaFilter) => void;
 }) {
   const [query, setQuery] = useState('');
-  const [visaFilter, setVisaFilter] = useState<VisaFilter>('all');
 
   const filteredCountries = useMemo(() => {
     const normalizedQuery = normalize(query.trim());
@@ -568,7 +595,7 @@ function DestinationsScreen({
       <FilterPills
         options={visaFilterOptions}
         value={visaFilter}
-        onChange={setVisaFilter}
+        onChange={onVisaFilterChange}
       />
       {filteredCountries.length === 0 ? (
         <EmptyState message="Aucun pays ne correspond aux filtres." />
@@ -830,11 +857,33 @@ function SectionHeader({
   );
 }
 
-function StatCard({ label, value }: { label: string; value: number | string }) {
-  return (
-    <View style={styles.statCard}>
+function StatCard({
+  label,
+  value,
+  onPress,
+}: {
+  label: string;
+  value: number | string;
+  onPress?: () => void;
+}) {
+  const content = (
+    <>
       <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
+    </>
+  );
+
+  if (onPress) {
+    return (
+      <Pressable style={styles.statCard} onPress={onPress}>
+        {content}
+      </Pressable>
+    );
+  }
+
+  return (
+    <View style={styles.statCard}>
+      {content}
     </View>
   );
 }
