@@ -772,6 +772,7 @@ function SimulatorScreen({
             options={travelerOptions}
             value={travelerType}
             onChange={setTravelerType}
+            columns={2}
           />
           <OptionGroup
             label="Style de voyage"
@@ -973,11 +974,13 @@ function OptionGroup<TValue extends string>({
   options,
   value,
   onChange,
+  columns,
 }: {
   label: string;
   options: Array<{ label: string; value: TValue }>;
   value: TValue;
   onChange: (value: TValue) => void;
+  columns?: 2;
 }) {
   return (
     <View style={styles.optionGroup}>
@@ -989,7 +992,11 @@ function OptionGroup<TValue extends string>({
           return (
             <Pressable
               key={option.value}
-              style={[styles.option, isActive && styles.optionActive]}
+              style={[
+                styles.option,
+                columns === 2 && styles.optionTwoColumn,
+                isActive && styles.optionActive,
+              ]}
               onPress={() => onChange(option.value)}
             >
               <Text
@@ -1520,6 +1527,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 11,
   },
+  optionTwoColumn: {
+    flexBasis: '45%',
+    flexGrow: 1,
+    minWidth: 0,
+  },
   optionActive: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
@@ -1528,6 +1540,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 13,
     fontWeight: '800',
+    textAlign: 'center',
   },
   optionTextActive: {
     color: '#ffffff',
