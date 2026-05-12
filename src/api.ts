@@ -1,4 +1,5 @@
 import type {
+  Country,
   Deal,
   Destination,
   TripSimulationRequest,
@@ -52,6 +53,17 @@ export async function fetchDeals() {
   });
 
   return payload.deals;
+}
+
+export async function fetchCountries() {
+  const payload = await requestJson<{ countries: Country[] }>(
+    '/api/mobile/countries',
+    {
+      signal: timeoutSignal(15_000),
+    },
+  );
+
+  return payload.countries;
 }
 
 export async function fetchDestinations(mode: 'public' | 'simulator') {

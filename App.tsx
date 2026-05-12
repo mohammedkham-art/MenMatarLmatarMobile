@@ -16,12 +16,15 @@ import {
 } from 'react-native';
 
 import {
+  fetchCountries,
   fetchDeals,
   fetchDestinations,
   simulateTrip,
 } from './src/api';
 import { colors } from './src/theme';
 import type {
+  Country,
+  CountryVisaType,
   Deal,
   DealVisaType,
   Destination,
@@ -53,7 +56,7 @@ const styleOptions: Array<{ label: string; value: TravelStyle }> = [
   { label: 'Confort', value: 'comfortable' },
 ];
 
-const visaLabels: Record<DealVisaType | DestinationVisaType, string> = {
+const visaLabels: Record<DealVisaType | DestinationVisaType | CountryVisaType, string> = {
   visa_free: 'Sans visa',
   evisa: 'eVisa',
   e_visa: 'eVisa',
@@ -115,7 +118,9 @@ function getFreshnessLabel(deal: Deal) {
   return 'Prix repéré récemment';
 }
 
-function getVisaTone(visaType: DealVisaType | DestinationVisaType | null) {
+function getVisaTone(
+  visaType: DealVisaType | DestinationVisaType | CountryVisaType | null,
+) {
   if (visaType === 'evisa' || visaType === 'e_visa') {
     return { backgroundColor: colors.blueSoft, color: colors.blue };
   }
@@ -142,7 +147,7 @@ function getTransitAirport(tags: string[]) {
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [deals, setDeals] = useState<Deal[]>([]);
-  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
   const [simulatorDestinations, setSimulatorDestinations] = useState<
     Destination[]
   >([]);
@@ -159,10 +164,10 @@ export default function App() {
         setIsLoading(true);
         setLoadError(null);
 
-        const [nextDeals, nextDestinations, nextSimulatorDestinations] =
+        const [nextDeals, nextCountries, nextSimulatorDestinations] =
           await Promise.all([
             fetchDeals(),
-            fetchDestinations('public'),
+            fetchCountries(),
             fetchDestinations('simulator'),
           ]);
 
@@ -171,7 +176,7 @@ export default function App() {
         }
 
         setDeals(nextDeals);
-        setDestinations(nextDestinations);
+        setCountries(nextCountries);
         setSimulatorDestinations(nextSimulatorDestinations);
       } catch (error) {
         if (isMounted) {
@@ -232,13 +237,13 @@ export default function App() {
             {activeTab === 'home' && (
               <HomeScreen
                 deals={featuredDeals}
-                destinations={destinations}
+                countries={countries}
                 onNavigate={setActiveTab}
               />
             )}
             {activeTab === 'deals' && <DealsScreen deals={deals} />}
             {activeTab === 'destinations' && (
-              <DestinationsScreen destinations={destinations} />
+              <DestinationsScreen countries={countries} />
             )}
             {activeTab === 'simulator' && (
               <SimulatorScreen destinations={simulatorDestinations} />
@@ -305,16 +310,16 @@ function TabBar({
 
 function HomeScreen({
   deals,
-  destinations,
+  countries,
   onNavigate,
 }: {
   deals: Deal[];
-  destinations: Destination[];
+  countries: Country[];
   onNavigate: (tab: Tab) => void;
 }) {
   const currentSimulation = useMemo(
     () => getRefreshItem(simulatorSnapshots),
-    [deals, destinations],
+    [deals, countries],
   );
 
   return (
@@ -490,37 +495,37 @@ function DealsScreen({ deals }: { deals: Deal[] }) {
 }
 
 function DestinationsScreen({
-  destinations,
+  countries,
 }: {
-  destinations: Destination[];
+  countries: Country[];
 }) {
   const [query, setQuery] = useState('');
   const [visaFilter, setVisaFilter] = useState<VisaFilter>('all');
 
-  const filteredDestinations = useMemo(() => {
+  const filteredCountries = useMemo(() => {
     const normalizedQuery = normalize(query.trim());
 
-    let result = destinations;
+    let result = countries;
 
     if (normalizedQuery) {
       result = result.filter(
-        (destination) =>
-          normalize(destination.city).includes(normalizedQuery) ||
-          normalize(destination.country).includes(normalizedQuery),
+        (country) => normalize(country.name).includes(normalizedQuery),
       );
     }
 
     if (visaFilter !== 'all') {
-      result = result.filter((destination) => {
-        const v = destination.visaType;
-        if (visaFilter === 'evisa') return v === 'evisa';
-        if (visaFilter === 'on_arrival') return v === 'on_arrival';
+      result = result.filter((country) => {
+        const v = country.visaType;
+        if (visaFilter === 'evisa') return v === 'evisa' || v === 'e_visa';
+        if (visaFilter === 'on_arrival') {
+          return v === 'on_arrival' || v === 'visa_on_arrival';
+        }
         return v === visaFilter;
       });
     }
 
     return result;
-  }, [destinations, query, visaFilter]);
+  }, [countries, query, visaFilter]);
 
   return (
     <View>
@@ -531,7 +536,7 @@ function DestinationsScreen({
       <TextInput
         value={query}
         onChangeText={setQuery}
-        placeholder="Chercher une ville ou un pays"
+        placeholder="Rechercher un pays"
         placeholderTextColor={colors.muted}
         style={styles.input}
       />
@@ -540,11 +545,11 @@ function DestinationsScreen({
         value={visaFilter}
         onChange={setVisaFilter}
       />
-      {filteredDestinations.length === 0 ? (
-        <EmptyState message="Aucune destination ne correspond aux filtres." />
+      {filteredCountries.length === 0 ? (
+        <EmptyState message="Aucun pays ne correspond aux filtres." />
       ) : (
-        filteredDestinations.map((destination) => (
-          <DestinationCard key={destination.id} destination={destination} />
+        filteredCountries.map((country) => (
+          <CountryCard key={country.id} country={country} />
         ))
       )}
     </View>
@@ -801,7 +806,7 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
 function VisaBadge({
   visaType,
 }: {
-  visaType: DealVisaType | DestinationVisaType | null;
+  visaType: DealVisaType | DestinationVisaType | CountryVisaType | null;
 }) {
   if (!visaType) {
     return null;
@@ -814,6 +819,35 @@ function VisaBadge({
       <Text style={[styles.badgeText, { color: tone.color }]}>
         {visaLabels[visaType]}
       </Text>
+    </View>
+  );
+}
+
+function CountryCard({
+  country,
+}: {
+  country: Country;
+}) {
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardTop}>
+        <View style={styles.cardMain}>
+          <View style={styles.badgeRow}>
+            <Text style={styles.countryCode}>{country.code}</Text>
+            <VisaBadge visaType={country.visaType} />
+          </View>
+          <Text style={styles.cardTitle}>{country.name}</Text>
+          <Text style={styles.cardSubtitle}>{country.region}</Text>
+        </View>
+      </View>
+      {(country.maxStayDays !== null || country.notes) && (
+        <View style={styles.detailList}>
+          {country.maxStayDays !== null && (
+            <Text style={styles.detail}>Séjour max: {country.maxStayDays} jours</Text>
+          )}
+          {country.notes && <Text style={styles.detail}>{country.notes}</Text>}
+        </View>
+      )}
     </View>
   );
 }

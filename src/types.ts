@@ -32,8 +32,12 @@ export type Deal = {
 export type DestinationVisaType =
   | 'visa_free'
   | 'evisa'
+  | 'e_visa'
   | 'on_arrival'
+  | 'visa_on_arrival'
   | 'visa_required';
+
+export type CountryVisaType = DestinationVisaType;
 
 export type Destination = {
   id: string;
@@ -42,6 +46,18 @@ export type Destination = {
   countryCode: string | null;
   region: string | null;
   visaType: DestinationVisaType | null;
+  isFeatured: boolean;
+};
+
+export type Country = {
+  id: string;
+  name: string;
+  code: string;
+  region: string;
+  visaType: CountryVisaType;
+  maxStayDays: number | null;
+  notes: string | null;
+  officialSourceUrl: string | null;
   isFeatured: boolean;
 };
 
