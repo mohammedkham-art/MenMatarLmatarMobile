@@ -105,3 +105,12 @@ export type TripSimulationResult = {
   foodTips: string[];
   passportVisaNotes: string[];
 };
+
+export type VisaFilter =
+  | 'all'
+  | 'visa_free'
+  | 'evisa'
+  | 'on_arrival'
+  | 'visa_required';
+
+export type DealSort = 'score' | 'price' | 'departure';

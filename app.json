@@ -12,18 +12,23 @@
       "resizeMode": "contain",
       "backgroundColor": "#0f3d2e"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "bundleIdentifier": "ma.menmatarlmatar.app",
-      "buildNumber": "1",
+      "buildNumber": "5",
       "supportsTablet": false
     },
     "android": {
       "package": "ma.menmatarlmatar.app",
-      "versionCode": 1
+      "versionCode": 5
     },
     "extra": {
       "apiBaseUrl": "https://menmatarlmatar.ma"
-    }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }

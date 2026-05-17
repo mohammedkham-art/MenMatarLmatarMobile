@@ -4,7 +4,7 @@ import type {
   Destination,
   TripSimulationRequest,
   TripSimulationResult,
-} from './types';
+} from '../types';
 
 const defaultApiBaseUrl = 'https://menmatarlmatar.ma';
 
