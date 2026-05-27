@@ -6,9 +6,33 @@ export type DealVisaType =
   | 'visa_on_arrival'
   | 'visa_required';
 
+// Miroir exact de services/airlines/types.ts (backend).
+export type AirlineFare = {
+  id: string;
+  airlineId: string;
+  fareName: string;
+  personalItem: boolean;
+  personalItemDimensions: string | null;
+  cabinAllowed: boolean;
+  cabinWeightKg: number | null;
+  cabinDimensions: string | null;
+  checkedAllowed: boolean;
+  checkedWeightKg: number | null;
+  checkedCount: number;
+};
+
+export type Airline = {
+  id: string;
+  name: string;
+  code: string;
+  logoUrl: string | null;
+  fares: AirlineFare[];
+};
+
 export type Deal = {
   id: string;
   title: string;
+  slug: string;
   fromAirport: string;
   toAirport: string;
   fromCity: string;
@@ -17,12 +41,18 @@ export type Deal = {
   visaType: DealVisaType | null;
   priceMad: number;
   airline: string | null;
+  airlineId: string | null;
+  fareId: string | null;
+  airlineDetails: Omit<Airline, 'fares'> | null;
+  fare: AirlineFare | null;
   departureDate: string | null;
   returnDate: string | null;
   bookingUrl: string;
   tags: string[];
   isActive: boolean;
   isFeatured: boolean;
+  isFlash: boolean;
+  isTest: boolean;
   score: number;
   lastCheckedAt: string;
   createdAt: string;
