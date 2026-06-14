@@ -25,10 +25,23 @@
       "versionCode": 6
     },
     "extra": {
-      "apiBaseUrl": "https://menmatarlmatar.ma"
+      "apiBaseUrl": "https://menmatarlmatar.ma",
+      "router": {},
+      "eas": {
+        "projectId": "26133842-c75e-4b3a-8812-94b678911336"
+      }
     },
     "plugins": [
-      "expo-router"
-    ]
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notif-icon.png",
+          "color": "#0f3d2e",
+          "defaultChannel": "default"
+        }
+      ]
+    ],
+    "owner": "menmatarlmatar"
   }
 }

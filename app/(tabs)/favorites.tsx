@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -45,16 +46,30 @@ export default function FavoritesScreen() {
             }
           />
         </View>
-        {count > 0 && (
+        <View style={localStyles.headerActions}>
+          {count > 0 && (
+            <Pressable
+              onPress={handleClearAll}
+              style={localStyles.clearButton}
+              accessibilityRole="button"
+              accessibilityLabel="Vider tous les favoris"
+            >
+              <Text style={localStyles.clearButtonText}>Vider</Text>
+            </Pressable>
+          )}
           <Pressable
-            onPress={handleClearAll}
-            style={localStyles.clearButton}
+            onPress={() => router.push('/settings')}
+            style={({ pressed }) => [
+              localStyles.settingsButton,
+              pressed && localStyles.settingsButtonPressed,
+            ]}
             accessibilityRole="button"
-            accessibilityLabel="Vider tous les favoris"
+            accessibilityLabel="Ouvrir les réglages"
+            hitSlop={8}
           >
-            <Text style={localStyles.clearButtonText}>Vider</Text>
+            <Feather name="settings" size={18} color={colors.text} />
           </Pressable>
-        )}
+        </View>
       </View>
 
       {count === 0 ? (
@@ -91,12 +106,30 @@ const localStyles = StyleSheet.create({
   headerTextWrap: {
     flex: 1,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 14,
+  },
+  settingsButton: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  settingsButtonPressed: {
+    opacity: 0.7,
+  },
   clearButton: {
     backgroundColor: colors.dangerSoft,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 9,
-    marginBottom: 14,
   },
   clearButtonText: {
     color: colors.danger,
