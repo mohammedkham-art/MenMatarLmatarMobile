@@ -2,27 +2,22 @@
   "expo": {
     "name": "Men Matar L Matar",
     "slug": "men-matar-l-matar",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "orientation": "portrait",
     "scheme": "menmatarlmatar",
     "userInterfaceStyle": "light",
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/logo-sticker.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FFFFFF"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "bundleIdentifier": "ma.menmatarlmatar.app",
-      "buildNumber": "9",
+      "buildNumber": "10",
       "supportsTablet": false
     },
     "android": {
       "package": "ma.menmatarlmatar.app",
-      "versionCode": 9,
+      "versionCode": 10,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
@@ -45,7 +40,16 @@
           "defaultChannel": "default"
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        }
+      ]
     ],
     "owner": "menmatarlmatar"
   }
