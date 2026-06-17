@@ -1,4 +1,4 @@
-import { Stack, useRouter } from 'expo-router';
+import { type Href, Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
@@ -15,7 +15,12 @@ import { loadPushState } from '../src/services/push-storage';
 export default function RootLayout() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
+  const [pendingRoute, setPendingRoute] = useState<Href | null>(null);
 
+  // Effect 1 — load push state, decide if onboarding is needed, then mark ready.
+  // Navigation is intentionally NOT triggered here: calling router.replace before
+  // <Stack> is mounted (ready=false) caused Expo Router to unmount/remount the
+  // root layout in an infinite loop.
   useEffect(() => {
     let cancelled = false;
     let rotationSubscription: { remove: () => void } | null = null;
@@ -26,11 +31,10 @@ export default function RootLayout() {
         if (cancelled) return;
 
         if (!state.onboardingDone) {
-          router.replace('/onboarding');
+          setPendingRoute('/onboarding');
         } else if (state.token !== null) {
           // Background refresh + token-rotation listener: only if we
           // already have a token (i.e. permission was granted before).
-          // Avoids re-prompting users who chose "Plus tard" at onboarding.
           ensurePushTokenRegistered().catch(() => undefined);
           rotationSubscription = subscribeToTokenRotation();
         }
@@ -43,7 +47,14 @@ export default function RootLayout() {
       cancelled = true;
       rotationSubscription?.remove();
     };
-  }, [router]);
+  }, []);
+
+  // Effect 2 — navigate only after <Stack> is mounted (ready=true).
+  useEffect(() => {
+    if (ready && pendingRoute !== null) {
+      router.replace(pendingRoute);
+    }
+  }, [ready, pendingRoute, router]);
 
   return (
     <SafeAreaProvider>
