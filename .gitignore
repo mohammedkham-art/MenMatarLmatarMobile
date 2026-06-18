@@ -1,2 +1,6 @@
 node_modules
 .expo/
+
+# Firebase — sensitive credentials, never commit
+google-services.json
+*-adminsdk-*.json
