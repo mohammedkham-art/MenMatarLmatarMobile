@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useState, type ComponentProps } from 'react';
 import { Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
@@ -5,10 +6,28 @@ import { Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { sharedStyles as styles } from '../theme/styles';
 import type { Airline, AirlineFare, Deal } from '../types';
-import { getFreshnessLabel, getTransitAirport } from '../utils/deals';
+import { getTransitAirport } from '../utils/deals';
 import { formatDate, formatMad } from '../utils/format';
+import { normalizeText } from '../utils/normalize-text';
 import { FavoriteButton } from './FavoriteButton';
 import { VisaBadge } from './VisaBadge';
+
+const PRIORITY_BADGES = [
+  'Offre éclair',
+  'Le meilleur prix',
+  'Bon prix',
+  'Bon deal',
+] as const;
+
+function getTopPriorityBadge(tags: string[]): string | null {
+  return PRIORITY_BADGES.find((badge) => tags.includes(badge)) ?? null;
+}
+
+function countryCodeToFlag(code: string): string {
+  return code
+    .toUpperCase()
+    .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
+}
 
 type AirlineLogoData = Pick<Airline, 'code' | 'logoUrl'>;
 
@@ -89,6 +108,35 @@ function BaggageRow({ fare }: { fare: AirlineFare | null }) {
   );
 }
 
+const dealCardStyles = StyleSheet.create({
+  directBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.primarySoft,
+    borderRadius: 999,
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  directBadgeText: {
+    color: colors.primary,
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  priorityBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.accent + '26',
+    borderRadius: 999,
+    marginTop: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  priorityBadgeText: {
+    color: colors.accent,
+    fontSize: 11,
+    fontWeight: '900',
+  },
+});
+
 const baggageStyles = StyleSheet.create({
   row: {
     flexDirection: 'row',
@@ -119,8 +167,8 @@ const airlineLogoStyles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     left: 10,
-    width: 32,
-    height: 32,
+    width: 44,
+    height: 44,
     borderRadius: 8,
     backgroundColor: '#ffffff',
     borderWidth: 1,
@@ -131,8 +179,8 @@ const airlineLogoStyles = StyleSheet.create({
     zIndex: 10,
   },
   image: {
-    width: 28,
-    height: 28,
+    width: 40,
+    height: 40,
   },
   fallbackText: {
     fontSize: 11,
@@ -142,19 +190,20 @@ const airlineLogoStyles = StyleSheet.create({
 });
 
 export function DealCard({ deal, compact }: { deal: Deal; compact?: boolean }) {
+  const router = useRouter();
   const departureDate = formatDate(deal.departureDate);
   const returnDate = formatDate(deal.returnDate);
   const transitAirport = getTransitAirport(deal.tags);
+  const topBadge = getTopPriorityBadge(deal.tags);
 
   return (
-    <View style={styles.card}>
+    <Pressable style={styles.card} onPress={() => router.push(`/deal/${deal.id}`)}>
       <AirlineLogo airline={deal.airlineDetails} />
       <FavoriteButton deal={deal} />
       <View style={styles.cardTop}>
         <View style={styles.cardMain}>
-          <Text style={styles.freshness}>{getFreshnessLabel(deal)}</Text>
-          <View style={styles.badgeRow}>
-            <Text style={styles.countryCode}>{deal.countryCode}</Text>
+          <View style={[styles.badgeRow, { paddingLeft: 40 }]}>
+            <Text style={styles.countryCode}>{countryCodeToFlag(deal.countryCode)}</Text>
             <VisaBadge visaType={deal.visaType} />
           </View>
           <Text style={styles.cardTitle}>
@@ -163,10 +212,21 @@ export function DealCard({ deal, compact }: { deal: Deal; compact?: boolean }) {
           <Text style={styles.cardSubtitle}>
             {deal.fromAirport} → {deal.toAirport}
           </Text>
-          {transitAirport && (
+          {transitAirport ? (
             <View style={styles.transitBadge}>
               <Text style={styles.transitBadgeText}>
                 Transit via {transitAirport}
+              </Text>
+            </View>
+          ) : (
+            <View style={dealCardStyles.directBadge}>
+              <Text style={dealCardStyles.directBadgeText}>✈️ Vol direct</Text>
+            </View>
+          )}
+          {topBadge && (
+            <View style={dealCardStyles.priorityBadge}>
+              <Text style={dealCardStyles.priorityBadgeText}>
+                {normalizeText(topBadge)}
               </Text>
             </View>
           )}
@@ -207,6 +267,6 @@ export function DealCard({ deal, compact }: { deal: Deal; compact?: boolean }) {
       >
         <Text style={styles.cardButtonText}>Voir l'offre</Text>
       </Pressable>
-    </View>
+    </Pressable>
   );
 }
