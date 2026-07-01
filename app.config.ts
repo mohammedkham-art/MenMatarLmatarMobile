@@ -16,7 +16,7 @@ const config: ExpoConfig = {
   },
   android: {
     package: 'ma.menmatarlmatar.app',
-    versionCode: 16,
+    versionCode: 17,
     backgroundColor: '#FFFFFF',
     googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
     adaptiveIcon: {
