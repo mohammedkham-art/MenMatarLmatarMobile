@@ -255,7 +255,7 @@ export const sharedStyles = StyleSheet.create({
   },
   countryCode: {
     color: colors.muted,
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '900',
     letterSpacing: 1.2,
     marginRight: 8,

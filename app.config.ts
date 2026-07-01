@@ -11,15 +11,13 @@ const config: ExpoConfig = {
   assetBundlePatterns: ['**/*'],
   ios: {
     bundleIdentifier: 'ma.menmatarlmatar.app',
-    buildNumber: '14',
+    buildNumber: '15',
     supportsTablet: false,
   },
   android: {
     package: 'ma.menmatarlmatar.app',
-    versionCode: 14,
+    versionCode: 16,
     backgroundColor: '#FFFFFF',
-    // EAS provides GOOGLE_SERVICES_JSON as a secret file env var (production).
-    // Locally, fall back to the gitignored ./google-services.json if present.
     googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
@@ -50,7 +48,7 @@ const config: ExpoConfig = {
       {
         backgroundColor: '#FFFFFF',
         image: './assets/splash-icon.png',
-        imageWidth: 200,
+        imageWidth: 150,
         resizeMode: 'contain',
       },
     ],

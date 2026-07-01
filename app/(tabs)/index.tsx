@@ -51,7 +51,7 @@ export default function HomeScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View>
-        <View style={styles.hero}>
+        <Pressable onPress={() => router.push('/simulator')} style={styles.hero}>
           <Text style={styles.eyebrow}>Simulateur IA</Text>
           <Text style={styles.heroTitle}>
             Imagine ton prochain séjour avant de réserver.
@@ -84,7 +84,7 @@ export default function HomeScreen() {
               {currentSimulation.city}
             </Text>
           </View>
-        </View>
+        </Pressable>
 
         <View style={styles.quickActions}>
           <Pressable

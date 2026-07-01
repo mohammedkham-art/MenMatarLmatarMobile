@@ -3,7 +3,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-
 import { AppDataProvider } from '../src/context/AppDataContext';
 import { FavoritesProvider } from '../src/context/FavoritesContext';
 import {
@@ -17,10 +16,6 @@ export default function RootLayout() {
   const [ready, setReady] = useState(false);
   const [pendingRoute, setPendingRoute] = useState<Href | null>(null);
 
-  // Effect 1 — load push state, decide if onboarding is needed, then mark ready.
-  // Navigation is intentionally NOT triggered here: calling router.replace before
-  // <Stack> is mounted (ready=false) caused Expo Router to unmount/remount the
-  // root layout in an infinite loop.
   useEffect(() => {
     let cancelled = false;
     let rotationSubscription: { remove: () => void } | null = null;
@@ -30,13 +25,17 @@ export default function RootLayout() {
         const state = await loadPushState();
         if (cancelled) return;
 
-        if (!state.onboardingDone) {
+        if (!state.onboardingDone && !__DEV__) {
           setPendingRoute('/onboarding');
-        } else if (state.token !== null) {
-          // Background refresh + token-rotation listener: only if we
-          // already have a token (i.e. permission was granted before).
+        } else {
+          // Toujours tenter l'enregistrement après l'onboarding :
+          // gère le premier enregistrement, le changement de token,
+          // le refresh 24h et le changement de version.
           ensurePushTokenRegistered().catch(() => undefined);
-          rotationSubscription = subscribeToTokenRotation();
+          if (state.token !== null) {
+            // L'écouteur de rotation n'est utile qu'une fois qu'on a un token.
+            rotationSubscription = subscribeToTokenRotation();
+          }
         }
       } finally {
         if (!cancelled) setReady(true);
@@ -49,7 +48,6 @@ export default function RootLayout() {
     };
   }, []);
 
-  // Effect 2 — navigate only after <Stack> is mounted (ready=true).
   useEffect(() => {
     if (ready && pendingRoute !== null) {
       router.replace(pendingRoute);
