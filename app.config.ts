@@ -24,6 +24,12 @@ const config: ExpoConfig = {
       backgroundColor: '#FFFFFF',
     },
   },
+  updates: {
+    url: 'https://u.expo.dev/26133842-c75e-4b3a-8812-94b678911336',
+  },
+  runtimeVersion: {
+    policy: 'appVersion',
+  },
   extra: {
     apiBaseUrl: 'https://menmatarlmatar.ma',
     router: {},
