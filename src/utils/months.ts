@@ -6,6 +6,10 @@ export function toMonthKey(m: MonthValue): number {
   return m.year * 100 + m.month;
 }
 
+export function toMonthISOKey(m: MonthValue): string {
+  return `${m.year}-${String(m.month).padStart(2, '0')}`;
+}
+
 export function getRollingMonths(): MonthValue[] {
   const now = new Date();
   return Array.from({ length: 12 }, (_, i) => {

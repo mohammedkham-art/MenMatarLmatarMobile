@@ -9,6 +9,7 @@ import {
 } from 'react';
 
 import {
+  fetchAvailableMonths,
   fetchCountries,
   fetchDeals,
   fetchDestinations,
@@ -19,6 +20,7 @@ type AppDataContextValue = {
   deals: Deal[];
   countries: Country[];
   simulatorDestinations: Destination[];
+  availableMonths: string[];
   isLoading: boolean;
   isRefreshing: boolean;
   loadError: string | null;
@@ -34,6 +36,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [simulatorDestinations, setSimulatorDestinations] = useState<
     Destination[]
   >([]);
+  const [availableMonths, setAvailableMonths] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -47,12 +50,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         setIsLoading(true);
         setLoadError(null);
 
-        const [nextDeals, nextCountries, nextSimulatorDestinations] =
-          await Promise.all([
-            fetchDeals(),
-            fetchCountries(),
-            fetchDestinations('simulator'),
-          ]);
+        const [
+          nextDeals,
+          nextCountries,
+          nextSimulatorDestinations,
+          nextAvailableMonths,
+        ] = await Promise.all([
+          fetchDeals(),
+          fetchCountries(),
+          fetchDestinations('simulator'),
+          fetchAvailableMonths().catch(() => []),
+        ]);
 
         if (!isMounted) {
           return;
@@ -61,6 +69,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         setDeals(nextDeals);
         setCountries(nextCountries);
         setSimulatorDestinations(nextSimulatorDestinations);
+        setAvailableMonths(nextAvailableMonths);
       } catch (error) {
         if (isMounted) {
           setLoadError(
@@ -98,6 +107,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       deals,
       countries,
       simulatorDestinations,
+      availableMonths,
       isLoading,
       isRefreshing,
       loadError,
@@ -108,6 +118,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       deals,
       countries,
       simulatorDestinations,
+      availableMonths,
       isLoading,
       isRefreshing,
       loadError,

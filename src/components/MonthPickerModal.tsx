@@ -1,7 +1,13 @@
+import { useMemo } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from '../theme/colors';
-import { formatMonthName, getMonthState, toMonthKey } from '../utils/months';
+import {
+  formatMonthName,
+  getMonthState,
+  toMonthISOKey,
+  toMonthKey,
+} from '../utils/months';
 import type { MonthValue } from '../utils/months';
 
 type Props = {
@@ -10,6 +16,7 @@ type Props = {
   months: MonthValue[];
   monthFrom: MonthValue | null;
   monthTo: MonthValue | null;
+  availableMonths: string[];
   onMonthPress: (m: MonthValue) => void;
 };
 
@@ -19,8 +26,14 @@ export function MonthPickerModal({
   months,
   monthFrom,
   monthTo,
+  availableMonths,
   onMonthPress,
 }: Props) {
+  const availableSet = useMemo(
+    () => new Set(availableMonths),
+    [availableMonths],
+  );
+
   const hint = !monthFrom
     ? 'Appuie sur un mois pour commencer'
     : !monthTo
@@ -45,14 +58,17 @@ export function MonthPickerModal({
               const state = getMonthState(m, monthFrom, monthTo);
               const isActive = state === 'start' || state === 'end';
               const isInRange = state === 'in-range';
+              const isAvailable = availableSet.has(toMonthISOKey(m));
 
               return (
                 <Pressable
                   key={toMonthKey(m)}
+                  disabled={!isAvailable}
                   style={[
                     styles.cell,
                     isActive && styles.cellActive,
                     isInRange && styles.cellInRange,
+                    !isAvailable && styles.cellDisabled,
                   ]}
                   onPress={() => onMonthPress(m)}
                 >
@@ -61,6 +77,7 @@ export function MonthPickerModal({
                       styles.cellMonth,
                       isActive && styles.cellActiveText,
                       isInRange && styles.cellInRangeText,
+                      !isAvailable && styles.cellDisabledText,
                     ]}
                   >
                     {formatMonthName(m)}
@@ -69,6 +86,7 @@ export function MonthPickerModal({
                     style={[
                       styles.cellYear,
                       isActive && styles.cellActiveText,
+                      !isAvailable && styles.cellDisabledText,
                     ]}
                   >
                     {m.year}
@@ -139,6 +157,9 @@ const styles = StyleSheet.create({
   cellInRange: {
     backgroundColor: colors.primarySoft,
   },
+  cellDisabled: {
+    opacity: 0.4,
+  },
   cellMonth: {
     color: colors.text,
     fontSize: 13,
@@ -156,5 +177,8 @@ const styles = StyleSheet.create({
   },
   cellInRangeText: {
     color: colors.primary,
+  },
+  cellDisabledText: {
+    color: colors.muted,
   },
 });

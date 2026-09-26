@@ -22,7 +22,7 @@ import type { MonthValue } from '../../src/utils/months';
 
 
 export default function DealsScreen() {
-  const { deals, isRefreshing, refresh } = useAppData();
+  const { deals, availableMonths, isRefreshing, refresh } = useAppData();
   const [visaFilter, setVisaFilter] = useState<VisaFilter>('all');
   const [sort, setSort] = useState<DealSort>('score');
   const [monthFrom, setMonthFrom] = useState<MonthValue | null>(null);
@@ -177,6 +177,7 @@ export default function DealsScreen() {
         months={months}
         monthFrom={monthFrom}
         monthTo={monthTo}
+        availableMonths={availableMonths}
         onMonthPress={handleMonthPress}
       />
     </>

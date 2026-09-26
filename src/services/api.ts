@@ -58,6 +58,15 @@ export async function fetchDeals() {
   return payload.deals;
 }
 
+export async function fetchAvailableMonths() {
+  const payload = await requestJson<{ months: string[] }>(
+    '/api/mobile/available-months',
+    { signal: timeoutSignal(15_000) },
+  );
+
+  return payload.months;
+}
+
 export async function fetchDeal(id: string) {
   const payload = await requestJson<{ deal: Deal }>(`/api/mobile/deals/${id}`, {
     signal: timeoutSignal(15_000),
